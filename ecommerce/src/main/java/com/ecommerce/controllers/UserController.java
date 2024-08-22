@@ -10,4 +10,8 @@ public class UserController {
     public ResponseEntity helloWorld(){
         return ResponseEntity.ok("Hello World");
     }
+
+    public ResponseEntity getByUser(){
+        return ResponseEntity.ok("teste");
+    }
 }
