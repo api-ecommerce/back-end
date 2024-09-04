@@ -2,8 +2,8 @@ package com.ecommerce.entities.user;
 
 public enum UserRole {
 
-    ADMIN(1),
-    USER(0);
+    USER(0),
+    ADMIN(1);
 
     private int role;
 

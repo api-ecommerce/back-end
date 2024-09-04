@@ -30,10 +30,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST,"/**" ).hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/**" ).hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/**" ).permitAll()
+
+
+                        .requestMatchers(HttpMethod.GET, "/hello2").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
