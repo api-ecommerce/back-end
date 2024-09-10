@@ -37,8 +37,9 @@ public class UserModel implements UserDetails {
     @Column(name = "senha", nullable = false)
     private String senha;
 
+    @Enumerated(EnumType.ORDINAL) // Usando EnumType.ORDINAL para armazenar o valor do enum como um número
     @Column(name = "administrador", nullable = false)
-    private UserRole role;
+    private UserRole role = UserRole.USER; // Define o valor padrão como USER
 
     @Column(name = "criado_em", nullable = false)
     private Date criadoEm = new Date();
