@@ -39,8 +39,12 @@ public class UserController {
 
     public UserModel getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (UserModel
-                ) authentication.getPrincipal();
+        return (UserModel) authentication.getPrincipal();
     }
 
+    @GetMapping
+    @RequestMapping("/hello1")
+    public ResponseEntity helloWorld1(){
+        return ResponseEntity.ok("teste ok");
+    }
 }
