@@ -5,7 +5,7 @@ public class EventNotFoundException extends RuntimeException{
         super("Usuário não encontrado.");
     }
 
-    public EventNotFoundException(String mensagem){
-        super(mensagem);
+    public EventNotFoundException(String message){
+        super(message);
     }
 }

@@ -12,6 +12,6 @@ public class RestErrorMensagem {
 
     private HttpStatus error;
     private int errorCode;
-    private String mensagem;
+    private String message;
     private boolean status;
 }

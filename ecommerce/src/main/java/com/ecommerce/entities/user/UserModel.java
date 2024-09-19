@@ -21,12 +21,12 @@ import java.util.List;
 @Table(name = "tb_user")
 public class UserModel implements UserDetails {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "user_id", nullable = false)
-    private Long id;
+    private String id;
 
-    @Column(name = "nome", nullable = false)
-    private String nome;
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @Column(name = "cpf", nullable = false, unique = true)
     private String cpf;
@@ -34,15 +34,18 @@ public class UserModel implements UserDetails {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "senha", nullable = false)
-    private String senha;
+    @Column(name = "password", nullable = false)
+    private String password;
 
     @Enumerated(EnumType.ORDINAL) // Usando EnumType.ORDINAL para armazenar o valor do enum como um número
-    @Column(name = "administrador", nullable = false)
+    @Column(name = "admin", nullable = false)
     private UserRole role = UserRole.USER; // Define o valor padrão como USER
 
-    @Column(name = "criado_em", nullable = false)
-    private Date criadoEm = new Date();
+    @Column(name = "active", nullable = false)
+    private boolean active;
+
+    @Column(name = "created_on", nullable = false)
+    private Date createdOn = new Date();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -52,7 +55,7 @@ public class UserModel implements UserDetails {
 
     @Override
     public String getPassword() {
-        return this.senha;
+        return this.password;
     }
 
     @Override

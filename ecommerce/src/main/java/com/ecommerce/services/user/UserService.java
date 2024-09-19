@@ -45,7 +45,7 @@ public class UserService {
         return (UserModel) authentication.getPrincipal();
     }
 
-    private UserModel validateEmail(String email){
+    private UserModel validateEmail(String email) {
         return repository.findByEmail(email).orElseThrow(() -> new EventNotFoundException("Usuário não encontrado."));
     }
 
@@ -68,12 +68,13 @@ public class UserService {
             }
 
             UserModel newUser = new UserModel();
-            newUser.setNome(request.nome());
+            newUser.setName(request.name());
             newUser.setCpf(request.cpf());
             newUser.setEmail(request.email());
+            newUser.setActive(true);
 
-            String encryptedPassword = new BCryptPasswordEncoder().encode(request.senha());
-            newUser.setSenha(encryptedPassword);
+            String encryptedPassword = new BCryptPasswordEncoder().encode(request.password());
+            newUser.setPassword(encryptedPassword);
 
             repository.save(newUser);
 
@@ -84,48 +85,48 @@ public class UserService {
     }
 
 
-    public ResponseEntity login(LoginRequestDTO data){
-        try{
+    public ResponseEntity login(LoginRequestDTO data) {
+        try {
 
             Optional<UserModel> userOptional = repository.findByEmail(data.email());
 
-            if(userOptional.isEmpty()) return new ResponseEntity<>("Usuário não encontrado", HttpStatus.NOT_FOUND);
+            if (userOptional.isEmpty()) return new ResponseEntity<>("Usuário não encontrado", HttpStatus.NOT_FOUND);
 
             UserModel user = userOptional.get();
 
-            if(user.getEmail().equals(data.email()) && passwordEncoder.matches(data.senha(), user.getPassword()))
+            if (user.getEmail().equals(data.email()) && passwordEncoder.matches(data.password(), user.getPassword()))
                 return new ResponseEntity<>(new TokenResponseDTO(user.getEmail(), tokenService.generateToken(user), true), HttpStatus.OK);
 
             return new ResponseEntity<>("Email ou senha incorreto.", HttpStatus.NOT_FOUND);
-        }catch (RuntimeException ex){
+        } catch (RuntimeException ex) {
             throw new EventBadRequestException(ex.getMessage());
         }
     }
 
-    public ResponseEntity<UserResponseDTO> findByEmail(String email){
-        try{
+    public ResponseEntity<UserResponseDTO> findByEmail(String email) {
+        try {
             UserModel user = validateEmail(email);
 
-            return new ResponseEntity<>(new UserResponseDTO(user.getNome(), user.getEmail(), user.getCpf(), user.getRole()), HttpStatus.OK);
+            return new ResponseEntity<>(new UserResponseDTO(user.getName(), user.getEmail(), user.getCpf(), user.getRole()), HttpStatus.OK);
 
-        }catch(JpaSystemException ex){
+        } catch (JpaSystemException ex) {
             throw new EventInternalServerErrorException();
         }
     }
 
-    public ResponseEntity<List<UserResponseDTO>> getAllUsers(){
-        try{
-            List<UserModel> allUser = repository.findAll();
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
+        try {
+            List<UserModel> allUser = repository.findByActiveTrue();
             List<UserResponseDTO> response = new ArrayList<>();
 
-            if(allUser.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            if (allUser.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
-            for(UserModel user : allUser)
-                response.add(new UserResponseDTO(user.getNome(), user.getCpf(), user.getEmail(), user.getRole()));
+            for (UserModel user : allUser)
+                response.add(new UserResponseDTO(user.getName(), user.getCpf(), user.getEmail(), user.getRole()));
 
             return new ResponseEntity<>(response, HttpStatus.OK);
 
-        }catch (RuntimeException ex){
+        } catch (RuntimeException ex) {
             throw new EventInternalServerErrorException();
         }
     }
@@ -143,40 +144,42 @@ public class UserService {
 
             String encryptedPassword = passwordEncoder.encode(password[0]);
 
-            user.get().setSenha(encryptedPassword);
+            user.get().setPassword(encryptedPassword);
 
             repository.save(user.get());
 
-            return new ResponseEntity<>(new ForgotPasswordResponseDTO("Senha enviada com sucesso.",true), HttpStatus.OK);
+            return new ResponseEntity<>(new ForgotPasswordResponseDTO("Senha enviada com sucesso.", true), HttpStatus.OK);
 
         } catch (Exception ex) {
             throw new EventInternalServerErrorException(ex.getMessage());
         }
     }
 
-    public ResponseEntity editPassword(EditPasswordRequestDTO data, String email){
-        try{
+    public ResponseEntity editPassword(EditPasswordRequestDTO data, String email) {
+        try {
             UserModel user = validateEmail(email);
 
-            if(!(passwordEncoder.matches(data.senhaAtual(), user.getSenha()) && email.equals(user.getEmail())))
+            if (!(passwordEncoder.matches(data.currentPassword(), user.getPassword()) && email.equals(user.getEmail())))
                 return new ResponseEntity<>("Senha atual inválida", HttpStatus.BAD_REQUEST);
 
-            user.setSenha(passwordEncoder.encode(data.senha()));
+            user.setPassword(passwordEncoder.encode(data.newPassword()));
 
             repository.save(user);
 
-            return new ResponseEntity<>("Senha editada com sucesso!",HttpStatus.OK);
-        }catch (JpaSystemException ex){
+            return new ResponseEntity<>("Senha editada com sucesso!", HttpStatus.OK);
+        } catch (JpaSystemException ex) {
             throw new EventInternalServerErrorException(ex.getMessage());
-        }catch (RuntimeException ex){
+        } catch (RuntimeException ex) {
             throw new EventBadRequestException();
         }
     }
 
-    public ResponseEntity editAdminPermission(String email, UserEditTypeRequestDTO request){
+    public ResponseEntity editAdminPermission(String email, UserEditTypeRequestDTO request) {
         try {
             Optional<UserModel> userOptional = repository.findByEmail(email);
-            if(userOptional.isEmpty()){ return new ResponseEntity<>(HttpStatus.NOT_FOUND); }
+            if (userOptional.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
 
             UserModel user = userOptional.get();
 
@@ -185,11 +188,76 @@ public class UserService {
             repository.save(user);
 
             return new ResponseEntity<>("Tipo do usuário alterado com sucesso", HttpStatus.OK);
-        }catch (JpaSystemException ex){
+        } catch (JpaSystemException ex) {
             throw new EventInternalServerErrorException(ex.getMessage());
-        }catch(RuntimeException ex){
+        } catch (RuntimeException ex) {
             throw new EventBadRequestException(ex.getMessage());
         }
     }
 
+    public ResponseEntity<UpdateUserResponseDTO> updateUser(String email, UpdateUserRequestDTO request) {
+        try {
+            // Encontre o usuário existente
+            Optional<UserModel> userOptional = repository.findByEmail(email);
+            if (userOptional.isEmpty()) {
+                return new ResponseEntity<>(new UpdateUserResponseDTO(HttpStatus.NOT_FOUND, "Usuário não encontrado."), HttpStatus.NOT_FOUND);
+            }
+
+            UserModel updateUser = userOptional.get();
+
+            // Verifique se o novo e-mail já está em uso por outro usuário
+            if (!updateUser.getEmail().equals(request.email())) {
+                Optional<UserModel> existingUserWithNewEmail = repository.findByEmail(request.email());
+                if (existingUserWithNewEmail.isPresent()) {
+                    return new ResponseEntity<>(new UpdateUserResponseDTO(HttpStatus.CONFLICT, "O e-mail fornecido já está em uso por outro usuário."), HttpStatus.CONFLICT);
+                }
+            }
+
+            // Verifique se o novo CPF já está em uso por outro usuário
+            if (!updateUser.getCpf().equals(request.cpf())) {
+                Optional<UserModel> existingUserWithNewCpf = repository.findByCpf(request.cpf());
+                if (existingUserWithNewCpf.isPresent()) {
+                    return new ResponseEntity<>(new UpdateUserResponseDTO(HttpStatus.CONFLICT, "O CPF fornecido já está em uso por outro usuário."), HttpStatus.CONFLICT);
+                }
+            }
+
+            // Atualize as informações do usuário
+            updateUser.setName(request.name());
+            updateUser.setCpf(request.cpf());
+            updateUser.setEmail(request.email());
+
+            // Salve as alterações
+            repository.save(updateUser);
+            return new ResponseEntity<>(new UpdateUserResponseDTO(HttpStatus.OK, "Usuário atualizado com sucesso."), HttpStatus.OK);
+
+        } catch (JpaSystemException ex) {
+            throw new EventInternalServerErrorException(ex.getMessage());
+        } catch (RuntimeException ex) {
+            throw new EventBadRequestException(ex.getMessage());
+        }
+    }
+    public ResponseEntity deleteUser(String email) {
+
+        try {
+            Optional<UserModel> userOptional = repository.findByEmail(email);
+            if (userOptional.isEmpty()) {
+                return new ResponseEntity<>("Usuario não encontrado", HttpStatus.NOT_FOUND);
+            }
+
+            UserModel user = userOptional.get();
+
+            user.setActive(false);
+
+            repository.save(user);
+
+            return new ResponseEntity<>("Usuario desativado com sucesso", HttpStatus.OK);
+        } catch (JpaSystemException ex) {
+            throw new EventInternalServerErrorException(ex.getMessage());
+        } catch (RuntimeException ex) {
+            throw new EventBadRequestException(ex.getMessage());
+        }
+
+
+    }
 }
+

@@ -7,7 +7,7 @@ public class EventInternalServerErrorException extends RuntimeException {
 
     }
 
-    public EventInternalServerErrorException(String mensagem){
-        super(mensagem);
+    public EventInternalServerErrorException(String message){
+        super(message);
     }
 }

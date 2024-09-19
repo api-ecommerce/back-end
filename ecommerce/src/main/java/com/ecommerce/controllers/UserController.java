@@ -2,10 +2,13 @@ package com.ecommerce.controllers;
 
 import com.ecommerce.dtos.user.*;
 import com.ecommerce.entities.user.UserModel;
+import com.ecommerce.infra.security.TokenService;
 import com.ecommerce.services.user.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +23,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping
-    @RequestMapping("register")
+    @RequestMapping("/register")
     public ResponseEntity registerUser(@Valid @RequestBody RegisterUserRequestDTO request) {
         return userService.registerUser(request);
     }
@@ -33,13 +36,12 @@ public class UserController {
 
 
     @GetMapping
-    @RequestMapping("/get-users")
     public ResponseEntity<List<UserResponseDTO>> getAllUsers(){
         return userService.getAllUsers();
     }
 
     @GetMapping
-    @RequestMapping("/get/{email}")
+    @RequestMapping("/{email}")
     public ResponseEntity findByEmail(@PathVariable String email){
         return userService.findByEmail(email);
     }
@@ -57,14 +59,25 @@ public class UserController {
     }
 
     @PatchMapping
-    @RequestMapping("/edit-type/{email}")
+    @RequestMapping("/permission/{email}")
     public ResponseEntity editAdminPermission(@PathVariable String email, @RequestBody UserEditTypeRequestDTO request){
         return userService.editAdminPermission(email, request);
     }
 
-    @GetMapping
-    @RequestMapping("/hello")
-    public ResponseEntity helloWorld() {
+    @PutMapping
+    @RequestMapping("/update/{email}")
+    public ResponseEntity updateUser(@PathVariable String email, @RequestBody UpdateUserRequestDTO request){
+        return userService.updateUser(email, request);
+    }
+
+    @DeleteMapping
+    @RequestMapping("/delete/{email}")
+    public ResponseEntity deleteUser(@PathVariable String email){
+        return userService.deleteUser(email);
+    }
+
+    @GetMapping("/hello")
+    public ResponseEntity<UserModel> helloWorld() {
         UserModel teste = getAuthenticatedUser();
         return ResponseEntity.ok(teste);
     }

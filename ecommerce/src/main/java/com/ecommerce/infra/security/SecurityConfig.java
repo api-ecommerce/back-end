@@ -30,15 +30,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.GET, "/swagger-ui/index.html").permitAll()
                         .requestMatchers(HttpMethod.POST, "/user/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/user/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/user/get-users").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/user/get/{email}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/user").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/user/{email}").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,"/user/forgot-password").permitAll()
                         .requestMatchers(HttpMethod.PATCH,"/user/edit-password/{email}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/user/edit-type/{email}").hasRole("ADMIN")
-
+                        .requestMatchers(HttpMethod.PATCH, "/user/permission/{email}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/user/update/{email}").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE,"/user/delete/{email}").hasRole("USER")
 
                         .anyRequest().authenticated()
                 )

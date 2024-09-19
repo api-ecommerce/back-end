@@ -6,7 +6,7 @@ public class EventTimeOutException extends RuntimeException {
         super("Timeout");
     }
 
-    public EventTimeOutException(String mensagem){
-        super(mensagem);
+    public EventTimeOutException(String message){
+        super(message);
     }
 }

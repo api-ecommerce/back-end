@@ -6,7 +6,7 @@ public class EventBadRequestException extends RuntimeException {
         super("Erro na Requisição");
     }
 
-    public EventBadRequestException(String mensagem){
-        super(mensagem);
+    public EventBadRequestException(String message){
+        super(message);
     }
 }
