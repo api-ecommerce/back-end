@@ -3,8 +3,6 @@ package com.ecommerce.infra.security;
 import com.ecommerce.entities.user.UserModel;
 import com.ecommerce.exceptions.EventNotFoundException;
 import com.ecommerce.repositories.user.IUserRepository;
-import com.ecommerce.services.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,9 +13,12 @@ import java.util.ArrayList;
 
 @Component
 public class CustomUserDetailsService implements UserDetailsService {
+    
+    private final IUserRepository repository;
 
-    @Autowired
-    private IUserRepository repository;
+    public CustomUserDetailsService(IUserRepository repository){
+        this.repository = repository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

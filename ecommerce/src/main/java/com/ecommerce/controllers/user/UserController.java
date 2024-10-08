@@ -1,14 +1,10 @@
-package com.ecommerce.controllers;
+package com.ecommerce.controllers.user;
 
 import com.ecommerce.dtos.user.*;
 import com.ecommerce.entities.user.UserModel;
-import com.ecommerce.infra.security.TokenService;
 import com.ecommerce.services.user.UserService;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +15,15 @@ import java.util.List;
 @RequestMapping("/user")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public UserController(UserService userService){
+        this.userService = userService;
+    }
 
     @PostMapping
     @RequestMapping("/register")
-    public ResponseEntity registerUser(@Valid @RequestBody RegisterUserRequestDTO request) {
+    public ResponseEntity registerUser(@RequestBody RegisterUserRequestDTO request) {
         return userService.registerUser(request);
     }
 
@@ -61,7 +60,7 @@ public class UserController {
     @PatchMapping
     @RequestMapping("/permission/{email}")
     public ResponseEntity editAdminPermission(@PathVariable String email, @RequestBody UserEditTypeRequestDTO request){
-        return userService.editAdminPermission(email, request);
+        return userService.editPermission(email, request);
     }
 
     @PutMapping
@@ -74,6 +73,12 @@ public class UserController {
     @RequestMapping("/delete/{email}")
     public ResponseEntity deleteUser(@PathVariable String email){
         return userService.deleteUser(email);
+    }
+
+    @PatchMapping
+    @RequestMapping("/active/{email}")
+    public ResponseEntity activeUser(@PathVariable String email){
+        return userService.activeUser(email);
     }
 
     @GetMapping("/hello")
